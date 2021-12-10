@@ -11,12 +11,13 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800); //Configure s
 void setup() {
   Serial.begin(9600); //Setup Serial port for console
   strip.begin(); //Initialize NeoPixel strip object
-  strip.setBrightness(127); //LED brightness (0-255)
+  strip.setBrightness(50); //LED brightness (0-255)
 }
 
 void loop() {
   Serial.println("Restarting");
+  uint32_t p1Color = strip.Color(0, 255, 0);
+  uint32_t p2Color = strip.Color(255, 0, 0);
 
-  strip.show();
-  delay(50);
+  displayScores(20, 10, p1Color, p2Color, LED_COUNT);
 }
