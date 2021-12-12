@@ -15,6 +15,14 @@ int playerNumber;
 
 bool gameDone = false;
 
+int getP1Score(){
+  return player1Score;
+}
+
+int getP2Score(){
+  return player2Score;
+}
+
 void AISetup() {
   //set up game data
   player1Score = 0;
@@ -46,7 +54,7 @@ int getEnemyNumber() {
   }
 }
 // player chooses a spot on the light strip
-void playerSelect() {
+int playerSelect() {
   int s;
   if (playerNumber == 1) {
     if (player1Score > player2Score) {
@@ -71,12 +79,22 @@ void playerSelect() {
   return s;
 }
 //uses player select to place number int selcted spot
-int playerPlace(int s){
+void playerPlace(int s, uint32_t p1Color, uint32_t p2Color){
    
   gameData[s] = playerNumber;
 
-  check(s);
+  check_fun_ben(s);
 
+  if (playerNumber == 1) {
+    strip.setPixelColor(s, p1Color);
+    Serial.println("Lighting player 1");
+  }
+  else {
+    strip.setPixelColor(s, p2Color);
+    Serial.println("Lighting player 2");
+  }
+  delay(1000);
+  strip.show();
   togglePlayer();
 }
 
@@ -122,8 +140,8 @@ int smartMove(int n) {
   }
   return -1;
 }
-// checks the left and right to tell if you can add points
-void check(int s) {
+// check_fun_bens the left and right to tell if you can add points
+void check_fun_ben(int s) {
   int count = 1;
   int i = s;
   Serial.println(playerNumber);

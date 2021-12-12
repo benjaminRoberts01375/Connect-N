@@ -1,7 +1,7 @@
-void displayScores(int p1Score, int p2Score, uint32_t p1Color, uint32_t p2Color) {
-  strip.setPixelColor(9, 255, 0, 255);
+void displayScores(uint32_t p1Color, uint32_t p2Color) {
   resetStrip();
-
+  int p1Score = getP1Score();
+  int p2Score = getP2Score();
   int ledP1Score = p1Score;
   int ledP2Score = p2Score;
 
@@ -23,13 +23,13 @@ void displayScores(int p1Score, int p2Score, uint32_t p1Color, uint32_t p2Color)
 
   //Blink winner
   int blinkCount = 5;
-  int blinkDelay = 250;
+  int blinkDelay = 250; //Used for turning off and on (total 500)
 
   //Assume P1 won
   int LEDOffset = 0;
   int winnerPoints = p1Score;
   uint32_t winnerColor = p1Color;
-  
+  //Who to blink
   if (p2Score > p1Score){ //If P2 won
     LEDOffset = strip.numPixels() - p2Score; 
     winnerPoints = p2Score;
@@ -39,25 +39,23 @@ void displayScores(int p1Score, int p2Score, uint32_t p1Color, uint32_t p2Color)
     winnerPoints = strip.numPixels();
     winnerColor = p1Color + p2Color;
   }
-
-  for (int i = 0; i < blinkCount; i++){
-    for (int j = 0; j < winnerPoints; j++) {
-      strip.setPixelColor(LEDOffset + j, strip.Color(0, 0, 0));
-    }
-    strip.show();
+  //Blinking logic
+  for (int i = 0; i < blinkCount; i++){ //Blink n times
+    resetStrip(); //Blink off
     delay(blinkDelay);
     
-    for (int j = 0; j < winnerPoints; j++) {
+    for (int j = 0; j < winnerPoints; j++) { //Blink on
       strip.setPixelColor(LEDOffset + j, winnerColor);
-    }
+    } //Blink on
     strip.show();
     delay(blinkDelay);
   }
 }
 
 void resetStrip(){ //Removes all color from the strip
+  Serial.print(strip.numPixels());
   for (int i = 0; i < strip.numPixels(); i++){
-    strip.setPixelColor(strip.numPixels() - i, 0, 0, 0);
+    strip.setPixelColor(i, 0, 0, 0);
+    strip.show();
   }
-  strip.show();
 }
