@@ -19,5 +19,5 @@ void loop() {
   uint32_t p1Color = strip.Color(0, 255, 0);
   uint32_t p2Color = strip.Color(255, 0, 0);
 
-  displayScores(20, 10, p1Color, p2Color, LED_COUNT);
+  displayScores(20, 10, p1Color, p2Color);
 }
