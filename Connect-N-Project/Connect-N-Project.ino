@@ -11,12 +11,23 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800); //Configure s
 void setup() {
   Serial.begin(9600); //Setup Serial port for console
   strip.begin(); //Initialize NeoPixel strip object
-  strip.setBrightness(127); //LED brightness (0-255)
+  strip.setBrightness(50); //LED brightness (0-255)
+  resetStrip(); //Reset the strip to blank
+  randomSeed(analogRead(0)); //Setup randomness
 }
 
 void loop() {
   Serial.println("Restarting");
+  AISetup();
+  resetStrip();
+  uint32_t p1Color = strip.Color(0, 255, 0);
+  uint32_t p2Color = strip.Color(255, 0, 0);
 
-  strip.show();
-  delay(50);
+  for (int i = 0; i < strip.numPixels(); i++) {
+    int spot = playerSelect();
+    playerPlace(spot, p1Color, p2Color);
+    displayArray();
+  }
+
+  displayScores(p1Color, p2Color);
 }
