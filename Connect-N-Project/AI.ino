@@ -2,7 +2,7 @@ const int lightLength = 30;
 //const int numberOfPlayers = 2;
 const int scoreThreshold = 3;
 
-
+// game properties
 int gameData[lightLength];
 
 int player1Score;
@@ -13,6 +13,8 @@ bool pToggle;
 
 int playerNumber;
 
+bool gameDone = false;
+
 void AISetup() {
   //set up game data
   player1Score = 0;
@@ -20,75 +22,93 @@ void AISetup() {
 
   pToggle = true;
 
-  for(int i = 0; i < lightLength;i++)
-    gameData[i] = 0;    
+  togglePlayer();
+
+  gameDone = false;
+
+  for (int i = 0; i < lightLength; i++)
+    gameData[i] = 0;
 }
 // changes player
-void togglePlayer(){
-  if(pToggle){
-    playerNumber = 1; 
-  }else{
+void togglePlayer() {
+  if (pToggle) {
+    playerNumber = 1;
+  } else {
     playerNumber = 2;
   }
   pToggle = !pToggle;
 }
-int getEnemyNumber(){
-  if(playerNumber == 1){
+int getEnemyNumber() {
+  if (playerNumber == 1) {
     return 2;
-  }else{
+  } else {
     return 1;
   }
 }
 // player chooses a spot on the light strip
-int playerSelect(){
-
-  if(playerNumber == 1){
-    if()
-  }else{
-    
-  }
-  
+void playerSelect() {
   int s;
-  if(){
-    
-  }else{
-    s = random(lightLength);
-    while(gameData[s] != 0){
-      int s = random(lightLength);
+  if (playerNumber == 1) {
+    if (player1Score > player2Score) {
+      s = smartMove(2);
+    } else {
+      s = smartMove(1);
+    }
+  } else {
+    if (player2Score > player1Score) {
+      s = smartMove(1);
+    } else {
+      s = smartMove(2);
     }
   }
-
-  gameData[s] = playerNumber; 
+  // smartMove didnt find a spot
+  if (s == -1) {
+    s = random(lightLength);
+    while (gameData[s] != 0) {
+      s = random(lightLength);
+    }
+  }
+  return s;
+}
+//uses player select to place number int selcted spot
+int playerPlace(int s){
+   
+  gameData[s] = playerNumber;
 
   check(s);
-  
+
   togglePlayer();
 }
-//player makes move that blocks enemy
-int smartMove(int n){
-  int p[4] = {-1 ,-1 ,-1 ,-1};
+
+//player makes move depending on n
+int smartMove(int n) {
+
+  int p[4];
+  p[0] = -1;
+  p[1] = -1;
+  p[2] = -1;
+  p[3] = -1;
   int pL = 4;
   int pInv = 0;
-  
   int i = 0;
-
   bool foundSpot = false;
   //selects a slot next to enemy spot
-  while(pInv < pL && i < lightLength){
-    if(i != 0 || i != lightLength-1){
-      if(gameData[i] == 0 && (gameData[i-1] == n || gameData[i+1] == n)){
+  while (pInv < pL-1 && i < lightLength-1) {
+    
+    if (i != 0 || i != lightLength - 1) {
+      if (gameData[i] == 0 && (gameData[i - 1] == n || gameData[i + 1] == n)) {
         p[pInv] = i;
         pInv++;
         foundSpot = true;
       }
-    }else if(i == 0){
-       if(gameData[i] == 0 && gameData[i+1] == n){
+    } else if (i == 0) {
+      if (gameData[i] == 0 && gameData[i + 1] == n) {
         p[pInv] = i;
         pInv++;
         foundSpot = true;
       }
-    }else if(i == lightLength-1){
-      if(gameData[i] == 0 && gameData[i-1] == n){
+    } else if (i == lightLength - 1) {
+      if (gameData[i] == 0 && gameData[i - 1] == n) {
         p[pInv] = i;
         pInv++;
         foundSpot = true;
@@ -96,43 +116,60 @@ int smartMove(int n){
     }
     i++;
   }
-if(foundSpot){
-  int r = random(pL);
-  while(p[r] == -1){
-    r = random(pL);
+  if (foundSpot) {
+    int r = random(pL);
+    return p[r];
   }
-  return p[r];
-}
   return -1;
 }
-
-
 // checks the left and right to tell if you can add points
-void check(int s){
-  int count = 0;
+void check(int s) {
+  int count = 1;
   int i = s;
-  while(gameData[--i] == playerNumber){
-    count++;
-    i--;
-    if(i < 0)
-      break;
+  Serial.println(playerNumber);
+  if (i > 0) {
+    while (gameData[--i] == playerNumber) {
+      count++;
+      if (i < 0) {
+        break;
+      }
+    }
+    i = s;
   }
-  i = s;
-  while(gameData[++i] == playerNumber){
-    count++;
-    i++;
-    if(i >= lightLength)
-      break;
+  if (i < lightLength-1) {
+    while (gameData[++i] == playerNumber) {
+      count++;
+      if (i < lightLength-1) {
+        break;
+      }
+    }
   }
-  if(count >= scoreThreshold){
+  
+  if (count >= scoreThreshold) {
     incScore();
   }
+
 }
 //add points to current player
-void incScore(){
-  if(pToggle){
+void incScore() {
+  if (playerNumber == 1) {
     player1Score++;
-  }else{
+  } else {
     player2Score++;
   }
+}
+// this diaplays the array
+void displayArray() {
+  Serial.print("[");
+  for (int i = 0; i < lightLength; i++) {
+    Serial.print(gameData[i]);
+  }
+  Serial.println("]");
+}
+bool isGameDone() {
+  for (int i = 0; i < lightLength; i++) {
+    if (gameData[i] == 0)
+      return false;
+  }
+  return true;
 }
