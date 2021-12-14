@@ -15,11 +15,11 @@ int playerNumber;
 
 bool gameDone = false;
 
-int getP1Score(){
+int getP1Score() {
   return player1Score;
 }
 
-int getP2Score(){
+int getP2Score() {
   return player2Score;
 }
 
@@ -37,6 +37,7 @@ void AISetup() {
   for (int i = 0; i < lightLength; i++)
     gameData[i] = 0;
 }
+
 // changes player
 void togglePlayer() {
   if (pToggle) {
@@ -46,6 +47,7 @@ void togglePlayer() {
   }
   pToggle = !pToggle;
 }
+
 int getEnemyNumber() {
   if (playerNumber == 1) {
     return 2;
@@ -53,6 +55,7 @@ int getEnemyNumber() {
     return 1;
   }
 }
+
 // player chooses a spot on the light strip
 int playerSelect() {
   int s;
@@ -78,12 +81,13 @@ int playerSelect() {
   }
   return s;
 }
+
 //uses player select to place number int selcted spot
-void playerPlace(int s, uint32_t p1Color, uint32_t p2Color){
-   
+void playerPlace(int s, uint32_t p1Color, uint32_t p2Color) {
+
   gameData[s] = playerNumber;
 
-  check_fun_ben(s);
+  checkFunc(s);
 
   if (playerNumber == 1) {
     strip.setPixelColor(s, p1Color);
@@ -111,8 +115,8 @@ int smartMove(int n) {
   int i = 0;
   bool foundSpot = false;
   //selects a slot next to enemy spot
-  while (pInv < pL-1 && i < lightLength-1) {
-    
+  while (pInv < pL - 1 && i < lightLength - 1) {
+
     if (i != 0 || i != lightLength - 1) {
       if (gameData[i] == 0 && (gameData[i - 1] == n || gameData[i + 1] == n)) {
         p[pInv] = i;
@@ -140,8 +144,9 @@ int smartMove(int n) {
   }
   return -1;
 }
-// check_fun_bens the left and right to tell if you can add points
-void check_fun_ben(int s) {
+
+// checkFuncs the left and right to tell if you can add points
+void checkFunc(int s) {
   int count = 1;
   int i = s;
   Serial.println(playerNumber);
@@ -154,20 +159,52 @@ void check_fun_ben(int s) {
     }
     i = s;
   }
-  if (i < lightLength-1) {
+  if (i < lightLength - 1) {
     while (gameData[++i] == playerNumber) {
       count++;
-      if (i < lightLength-1) {
+      if (i < lightLength - 1) {
         break;
       }
     }
   }
-  
+
   if (count >= scoreThreshold) {
     incScore();
+    //Implementation inspired by Brian Hall & Kevin Slonka
+    asm volatile (
+      " mainLoop: "                         
+      "    mov r16, %D2  \n\t"
+      "    mov r17, %C2  \n\t"
+      "    mov r18, %B2  \n\t"
+      "    mov r19, %A2  \n\t"
+      "    mov r20, %D2  \n\t"
+      "    mov r21, %C2  \n\t"
+      "    mov r22, %B2  \n\t"
+      "    mov r23, %A2  \n\t"
+      "    sbi %[port], %[ledbit] \n\t"
+      " onLoop: "
+      "    subi r23, 1  \n\t"
+      "    sbci r22, 0  \n\t"
+      "    sbci r21, 0  \n\t"
+      "    sbci r20, 0  \n\t"
+      "    brcc onLoop  \n\t"
+      "    cbi  %[port], %[ledbit] \n\t"
+      " offLoop:"
+      "    subi r19, 1  \n\t"
+      "    sbci r18, 0  \n\t"
+      "    sbci r17, 0  \n\t"
+      "    sbci r16, 0  \n\t"
+      "    brcc offLoop \n\t"
+      :
+      : [port] "n" (_SFR_IO_ADDR(LEDPort)), // input variables
+      [ledbit] "n" (LEDBit),              // n: integer with known value
+      "d" (DelayTime)                     // d: greater than r15
+      : "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23" // clobbers
+    );
   }
 
 }
+
 //add points to current player
 void incScore() {
   if (playerNumber == 1) {
@@ -176,6 +213,7 @@ void incScore() {
     player2Score++;
   }
 }
+
 // this diaplays the array
 void displayArray() {
   Serial.print("[");
